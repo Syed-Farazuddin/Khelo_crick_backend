@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,95 +7,96 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User{
-  id Int @id @default(autoincrement())
-  name String? @unique
-  mobile String @unique
-  otp Int?
-  age Int?
-  dob String?
-  // Stats ---> User stats
+model User {
+  id       Int     @id @default(autoincrement())
+  name     String? @unique
+  mobile   String  @unique
+  otp      Int?
+  age      Int?
+  dob      String?
+  player Player?
 }
 
-model Player{
-  id Int @id @default(autoincrement())
+model Player {
+  id           Int      @id @default(autoincrement())
   bowlingStyle String
   battingStyle String
   wicketKeeper Boolean
-  allrounder  Boolean
-  // stats Stats
+  allrounder   Boolean
+  userId Int @unique
+  user User @relation(fields: [userId], references: [id])
+  statsId Int @unique
+  stats Stats @relation(fields: [statsId], references: [id])
   matches Match[]
-
-  // Stats --> Player stats
+  teams Team[]
 }
 
-model Stats{
-  id Int @id @default(autoincrement())
-  // player Player @relation(fields: [playerId], references: [id])
-  playerId Int 
-  matches Int 
-  // bowlingStats 
-  // battingStats
-  // FieldingStats
-}
-
-model bowlingStats{
-  id Int @id @default(autoincrement())
-  matches Int
-  innings Int
-  wickets Int
-  noBalls Int
-  wides Int
-}
-
-model battingStats{
-  id Int @id @default(autoincrement())
-  matches Int
-  innings Int
-  bowlsPlayed BigInt
-  runs BigInt
-  notOuts BigInt
-  average Decimal
-  strikeRate Decimal
-  sixes BigInt
-  fours BigInt
-  ones BigInt
-  twos BigInt
-  threes BigInt
-}
-
-model FieldingStats{
-  id Int @id @default(autoincrement())
-  catches Int
-  mostCatches Int
-  runOuts Int
-  mostRunOuts Int
-  stump Int
-}
-
-model Team{
-  id Int @id @default(autoincrement())
-  name String
-  // matches Match[]
-  // matches ---> Relation (For linking matches played by the team)
-  // User ---> Relation (For players who played in this team)
-  totalMatches Int
-  wins Int
-  losses Int
-  draws Int
-}
-
-model Match{
-  id Int @id @default(autoincrement())
-  state String 
-  ground String
-  date DateTime
-  overs Int
-  player Player @relation(fields: [playerId], references: [id])
+model Stats {
+  id       Int     @id @default(autoincrement())
+  userId   Int     @unique
   playerId Int
-  // team Team @relation(fields: [teamAId, teamBId] , references: [id, id])
-  teamAId Int
-  teamBId Int
-  // Team A Details 
-  // Team B Details --> Includes score details , players etc... Team (Relation) are mapped by Matches ids........
+  matches  Int
+  player Player?
+}
+
+model BowlingStats {
+  id       Int   @id @default(autoincrement())
+  matches  Int
+  innings  Int
+  wickets  Int
+  noBalls  Int
+  wides    Int
+}
+
+model BattingStats {
+  id          Int     @id @default(autoincrement())
+  matches     Int
+  innings     Int
+  ballsPlayed BigInt
+  runs        BigInt
+  notOuts     BigInt
+  average     Decimal
+  strikeRate  Decimal
+  sixes       BigInt
+  fours       BigInt
+  ones        BigInt
+  twos        BigInt
+  threes      BigInt
+}
+
+model FieldingStats {
+  id           Int @id @default(autoincrement())
+  catches      Int
+  mostCatches  Int
+  runOuts      Int
+  mostRunOuts  Int
+  stump        Int
+}
+
+model Team {
+  id         Int       @id @default(autoincrement())
+  name       String
+  matches    Match[]
+  totalMatches Int
+  wins       Int
+  losses     Int
+  draws      Int
+  players Player[]
+  tournaments Tournament[]
+}
+
+model Match {
+  id         Int       @id @default(autoincrement())
+  state      String
+  ground     String
+  date       DateTime
+  overs      Int
+  players Player[]
+  teams Team[]
+  teamId     Int
+}
+
+model Tournament {
+  id         Int      @id @default(autoincrement())
+  teams      Team[]
 }

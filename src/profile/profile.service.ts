@@ -7,9 +7,15 @@ export class ProfileService {
   constructor(private prismaService: PrismaService) {}
 
   async getProfileDetails(id: number) {
-    const userDetails = await this.prismaService.user.findUnique({
+    return await this.prismaService.user.findUnique({
       where: {
         id: id,
+      },
+      select: {
+        mobile: true,
+        name: true,
+        age: true,
+        dob: true,
       },
     });
   }
