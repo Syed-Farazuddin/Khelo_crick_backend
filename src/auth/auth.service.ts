@@ -45,9 +45,18 @@ export class AuthService {
   makeOTP() {
     let otp: number = 0;
     for (let i = 0; i < 4; i++) {
-      otp = Math.random() * (i + 1 * 10);
+      let pow = this.pow(i);
+      otp += (Math.floor(Math.random() * 9) + 1) * pow;
     }
     return otp;
+  }
+
+  pow(k: number): number {
+    let pow: number = 1;
+    for (let i = 0; i < k; i++) {
+      pow = pow * 10;
+    }
+    return pow;
   }
 
   async verifyOtp(verifyOtp: verifyOtpDto) {
