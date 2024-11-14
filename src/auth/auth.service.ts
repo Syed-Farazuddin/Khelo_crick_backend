@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { sendOtpDto, verifyOtpDto } from './dtos/auth.dto';
+import {
+  sendOtpDto,
+  updateFireBaseTokenDto,
+  verifyOtpDto,
+} from './dtos/auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -77,6 +81,21 @@ export class AuthService {
     return {
       status: false,
     };
+  }
+
+  async updateToken(updateFireBaseTokenDto: updateFireBaseTokenDto) {
+    await this.prismaService.userToken.upsert({
+      where: {
+        userId: 1,
+      },
+      update: {
+        token: updateFireBaseTokenDto.token,
+      },
+      create: {
+        token: updateFireBaseTokenDto.token,
+        userId: 1,
+      },
+    });
   }
 
   async deleteAccount() {}

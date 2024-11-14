@@ -1,7 +1,12 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { sendOtpDto, verifyOtpDto } from './dtos/auth.dto';
+import {
+  sendOtpDto,
+  updateFireBaseToken,
+  updateFireBaseTokenDto,
+  verifyOtpDto,
+} from './dtos/auth.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -18,5 +23,10 @@ export class AuthController {
   @Post('verifyotp')
   verifyOtp(@Body() verifyOtpDto: verifyOtpDto) {
     return this.authService.verifyOtp(verifyOtpDto);
+  }
+
+  @Post('firebase_token')
+  updateFireBaseToken(@Body() body: updateFireBaseTokenDto) {
+    return this.authService.updateToken(body);
   }
 }
