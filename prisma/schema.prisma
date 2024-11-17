@@ -36,7 +36,7 @@ model Player {
   statsId Int @unique
   stats Stats @relation(fields: [statsId], references: [id])
   matches Match[]
-  teams Team[]
+  teams Team[] @relation("TeamPlayers")
 }
 
 model Stats {
@@ -88,8 +88,8 @@ model Team {
   totalMatches Int
   wins       Int
   losses     Int
-  draws      Int
-  players Player[]
+  draws      Int 
+  players Player[] @relation("TeamPlayers")
   tournaments Tournament[]
 }
 

@@ -1,10 +1,25 @@
-import { Body, Controller, Param, ParseIntPipe, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Param,
+  ParseIntPipe,
+  Post,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { TeamService } from './team.service';
-import { addPlayerDto } from './dto/team.dto';
+import { addPlayerDto, createTeamDto } from './dto/team.dto';
+import { AuthGuard } from 'src/common/guards/auth.guard';
 
 @Controller('team')
 export class TeamController {
   constructor(private readonly teamService: TeamService) {}
+
+  @Post('createTeam')
+  @UseGuards(AuthGuard)
+  createTeam(@Body() createTeamDto: createTeamDto, @Request() request: any) {
+    return this.teamService.createTeam();
+  }
 
   @Post(':id/player')
   addPlayer(
