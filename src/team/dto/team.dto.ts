@@ -26,7 +26,19 @@ export class updateTeamDto {
   teamName?: string; // For updating Team Name
 }
 
-export class addPlayersDto {
+export class addPlayerDto {
+  @IsString()
+  @IsOptional()
+  mobile?: string;
+}
+
+export class createPlayerDto {
+  @IsString()
+  @IsOptional()
+  name?: string;
+}
+
+export class selectPlayersDto {
   @IsArray()
   @ArrayNotEmpty()
   @ValidateNested({ each: true })

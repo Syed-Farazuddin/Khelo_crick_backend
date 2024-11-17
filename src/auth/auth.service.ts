@@ -1,14 +1,18 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   sendOtpDto,
   updateFireBaseTokenDto,
   verifyOtpDto,
 } from './dtos/auth.dto';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
-  constructor(private prismaService: PrismaService) {}
+  constructor(
+    private prismaService: PrismaService,
+    private jwtService: JwtService,
+  ) {}
   async sendOtp(sendOtpDto: sendOtpDto) {
     const newOtp = this.makeOTP();
     const user = await this.prismaService.user.findFirst({
@@ -64,38 +68,48 @@ export class AuthService {
   }
 
   async verifyOtp(verifyOtp: verifyOtpDto) {
-    const { otp } = await this.prismaService.user.findFirst({
+    const { otp, id } = await this.prismaService.user.findFirst({
       where: {
         mobile: verifyOtp.mobile,
       },
       select: {
         otp: true,
+        id: true,
       },
     });
-    if (otp == verifyOtp.otp) {
+    // let otp = 1234;
+    if (otp == Number.parseInt(verifyOtp.otp)) {
+      const payload = JSON.stringify({
+        mobile: verifyOtp.mobile,
+        id: id,
+      });
+      const token = await this.jwtService.signAsync(payload);
       return {
         success: true,
+        token: token,
         message: 'Successfully Verified OTP',
       };
     }
-    return {
-      status: false,
-    };
+    throw new UnauthorizedException('Invalid Credentials');
   }
 
-  async updateToken(updateFireBaseTokenDto: updateFireBaseTokenDto) {
+  async updateToken(
+    updateFireBaseTokenDto: updateFireBaseTokenDto,
+    request: any,
+  ) {
     await this.prismaService.userToken.upsert({
       where: {
-        userId: 1,
+        userId: request.user.id,
       },
       update: {
         token: updateFireBaseTokenDto.token,
       },
       create: {
         token: updateFireBaseTokenDto.token,
-        userId: 1,
+        userId: request.user.id,
       },
     });
+    return request.user;
   }
 
   async deleteAccount() {}

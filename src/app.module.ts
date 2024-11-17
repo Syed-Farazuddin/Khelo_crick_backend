@@ -9,9 +9,20 @@ import { TournamentModule } from './tournament/tournament.module';
 import { ProfileModule } from './profile/profile.module';
 import { StoreModule } from './store/store.module';
 import { TeamModule } from './team/team.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [UserModule, PrismaModule, AuthModule, MatchesModule, TournamentModule, ProfileModule, StoreModule, TeamModule], // Import modules only
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    UserModule,
+    PrismaModule,
+    AuthModule,
+    MatchesModule,
+    TournamentModule,
+    ProfileModule,
+    StoreModule,
+    TeamModule,
+  ], // Import modules only
   controllers: [AppController], // Only include AppController here
   providers: [AppService],
 })

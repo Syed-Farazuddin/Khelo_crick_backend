@@ -16,7 +16,7 @@ export class verifyOtpDto {
   mobile: string;
 
   @IsNumber()
-  otp: number;
+  otp: string;
 
   @IsString()
   deviceId: string;
