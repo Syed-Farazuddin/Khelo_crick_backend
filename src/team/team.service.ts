@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { addPlayerDto, createTeamDto } from './dto/team.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -13,20 +13,26 @@ export class TeamService {
       },
     });
     if (!team) {
-      return await this.prismaService.team.create({
+      const team = await this.prismaService.team.create({
         data: {
-          ...createTeamDto,
+          name: createTeamDto.teamName,
+          imageUrl: createTeamDto.imageUrl,
+        },
+      });
+      await this.prismaService.player.update({
+        where: {
+          userId: request.user.id,
+        },
+        data: {
+          teams: {
+            connect: {
+              id: team.id,
+            },
+          },
         },
       });
     }
-    return await this.prismaService.team.update({
-      where: {
-        name: createTeamDto.teamName,
-      },
-      data: {
-        ...createTeamDto,
-      },
-    });
+    throw new ConflictException('A Team Already exists with this name');
   }
 
   async deleteTeam() {}

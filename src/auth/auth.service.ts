@@ -77,20 +77,52 @@ export class AuthService {
         id: true,
       },
     });
-    // let otp = 1234;
-    if (otp == Number.parseInt(verifyOtp.otp)) {
-      const payload = JSON.stringify({
-        mobile: verifyOtp.mobile,
-        id: id,
-      });
-      const token = await this.jwtService.signAsync(payload);
-      return {
-        success: true,
-        token: token,
-        message: 'Successfully Verified OTP',
-      };
+    if (otp != Number.parseInt(verifyOtp.otp)) {
+      throw new UnauthorizedException('Invalid Credentials');
     }
-    throw new UnauthorizedException('Invalid Credentials');
+    if (verifyOtp.isNewPlayer) {
+      const bowlingStatsId = await this.prismaService.bowlingStats.create({
+        data: {},
+        select: {
+          id: true,
+        },
+      });
+      const batStatsId = await this.prismaService.battingStats.create({
+        data: {},
+        select: {
+          id: true,
+        },
+      });
+      const fieldStatsId = await this.prismaService.fieldingStats.create({
+        data: {},
+        select: {
+          id: true,
+        },
+      });
+      const StatsId = await this.prismaService.stats.create({
+        data: {
+          batStatsId: batStatsId.id,
+          bowlStatsId: bowlingStatsId.id,
+          fieldStatsId: fieldStatsId.id,
+        },
+      });
+      await this.prismaService.player.create({
+        data: {
+          userId: id,
+          statsId: StatsId.id,
+        },
+      });
+    }
+    const payload = JSON.stringify({
+      mobile: verifyOtp.mobile,
+      id: id,
+    });
+    const token = await this.jwtService.signAsync(payload);
+    return {
+      success: true,
+      token: token,
+      message: 'Successfully Verified OTP',
+    };
   }
 
   async updateToken(

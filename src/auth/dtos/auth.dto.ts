@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class sendOtpDto {
   @IsString()
@@ -23,6 +23,9 @@ export class verifyOtpDto {
 
   @IsString()
   device: string;
+
+  @IsBoolean()
+  isNewPlayer: boolean;
 }
 
 export class updateFireBaseTokenDto {

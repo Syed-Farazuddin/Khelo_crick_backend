@@ -15,7 +15,7 @@ import { AuthGuard } from 'src/common/guards/auth.guard';
 export class TeamController {
   constructor(private readonly teamService: TeamService) {}
 
-  @Post('createTeam')
+  @Post('create_team')
   @UseGuards(AuthGuard)
   createTeam(@Body() createTeamDto: createTeamDto, @Request() request: any) {
     return this.teamService.createTeam(createTeamDto, request);
