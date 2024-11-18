@@ -29,7 +29,7 @@ export class TeamController {
     return this.teamService.addPlayer(addPlayerDto, teamId);
   }
 
-  @Post(':id/deletePlayer')
+  @Post(':id/delete_player')
   deletePlayer() {
     return this.teamService.deletePlayer();
   }

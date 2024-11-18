@@ -38,15 +38,16 @@ export class TeamService {
   async deleteTeam() {}
 
   async addPlayer(addPlayerDto: addPlayerDto, teamId: number) {
-    let { id } = await this.prismaService.user.findUnique({
+    let { player } = await this.prismaService.user.findUnique({
       where: {
         mobile: addPlayerDto.mobile,
       },
-    });
-
-    let player = await this.prismaService.player.findUnique({
-      where: {
-        userId: id,
+      select: {
+        player: {
+          select: {
+            id: true,
+          },
+        },
       },
     });
 

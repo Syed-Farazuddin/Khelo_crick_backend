@@ -102,14 +102,15 @@ model Team {
 }
 
 model Match {
-  id      Int      @id @default(autoincrement())
-  state   String
-  ground  String
-  date    DateTime
-  overs   Int
-  players Player[]
-  teams   Team[]
-  teamId  Int
+  id           Int      @id @default(autoincrement())
+  state        String
+  ground       String
+  date         DateTime
+  ballType     String
+  bowlingLimit Int
+  overs        Int
+  players      Player[]
+  teams        Team[]
 }
 
 model Tournament {
