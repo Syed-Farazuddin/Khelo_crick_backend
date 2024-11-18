@@ -18,7 +18,7 @@ export class TeamController {
   @Post('createTeam')
   @UseGuards(AuthGuard)
   createTeam(@Body() createTeamDto: createTeamDto, @Request() request: any) {
-    return this.teamService.createTeam();
+    return this.teamService.createTeam(createTeamDto, request);
   }
 
   @Post(':id/player')

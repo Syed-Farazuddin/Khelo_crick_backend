@@ -10,14 +10,6 @@ import {
 
 export class createTeamDto {
   @IsString()
-  teamA: string; // Team A Name
-
-  @IsString()
-  teamB: string; // Team B Name
-}
-
-export class updateTeamDto {
-  @IsString()
   @IsOptional()
   imageUrl?: string; // For updating Team Profile
 

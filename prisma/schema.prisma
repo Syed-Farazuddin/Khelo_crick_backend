@@ -27,10 +27,10 @@ model UserToken{
 
 model Player {
   id           Int      @id @default(autoincrement())
-  bowlingStyle String
-  battingStyle String
-  wicketKeeper Boolean
-  allrounder   Boolean
+  bowlingStyle String?
+  battingStyle String?
+  wicketKeeper Boolean?
+  allrounder   Boolean?
   userId Int @unique
   user User @relation(fields: [userId], references: [id])
   statsId Int @unique
@@ -41,54 +41,62 @@ model Player {
 
 model Stats {
   id       Int     @id @default(autoincrement())
-  userId   Int     @unique
-  playerId Int
-  matches  Int
+  matches  Int @default(0)
   player Player?
+  bowlStatsId Int @unique
+  bowlingStats BowlingStats @relation(fields: [bowlStatsId] , references: [id])
+  fieldStatsId Int @unique
+  fieldStats FieldingStats @relation(fields: [fieldStatsId] , references: [id])
+  batStatsId Int @unique
+  batStats BattingStats @relation(fields: [batStatsId] , references: [id])
 }
 
 model BowlingStats {
   id       Int   @id @default(autoincrement())
-  matches  Int
-  innings  Int
-  wickets  Int
-  noBalls  Int
-  wides    Int
+  stats Stats?
+  matches  Int       @default(0)
+  innings  Int @default(0)
+  wickets  Int @default(0)
+  noBalls  Int @default(0)
+  wides    Int @default(0)
 }
 
 model BattingStats {
   id          Int     @id @default(autoincrement())
-  matches     Int
-  innings     Int
-  ballsPlayed BigInt
-  runs        BigInt
-  notOuts     BigInt
-  average     Decimal
-  strikeRate  Decimal
-  sixes       BigInt
-  fours       BigInt
-  ones        BigInt
-  twos        BigInt
-  threes      BigInt
+  stats Stats?
+  matches     Int              @default(0)
+  innings     Int              @default(0)
+  ballsPlayed BigInt              @default(0)
+  runs        BigInt              @default(0)
+  notOuts     BigInt              @default(0)
+  average     Decimal              @default(0)
+  strikeRate  Decimal              @default(0)
+  sixes       BigInt              @default(0)
+  fours       BigInt              @default(0)
+  ones        BigInt              @default(0)
+  twos        BigInt              @default(0)
+  threes      BigInt              @default(0)
 }
 
 model FieldingStats {
   id           Int @id @default(autoincrement())
-  catches      Int
-  mostCatches  Int
-  runOuts      Int
-  mostRunOuts  Int
-  stump        Int
+  stats Stats?
+  catches      Int       @default(0)
+  mostCatches  Int      @default(0)
+  runOuts      Int      @default(0)
+  mostRunOuts  Int      @default(0)
+  stump        Int      @default(0)
 }
 
 model Team {
   id         Int       @id @default(autoincrement())
-  name       String
+  name       String? @unique
+  imageUrl String?
   matches    Match[]
-  totalMatches Int
-  wins       Int
-  losses     Int
-  draws      Int 
+  totalMatches Int  @default(0)
+  wins       Int  @default(0)
+  losses     Int @default(0)
+  draws      Int  @default(0)
   players Player[] @relation("TeamPlayers")
   tournaments Tournament[]
 }
