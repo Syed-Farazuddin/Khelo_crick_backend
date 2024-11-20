@@ -1,11 +1,15 @@
-import { IsNumber, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  ArrayNotEmpty,
+  IsArray,
+  IsNumber,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 
 export class ScheduleMatchDto {
-  @IsNumber()
-  teamA: number;
-
-  @IsNumber()
-  teamB: number;
+  @IsArray()
+  teams: number[];
 
   @IsString()
   ballType: string;
@@ -21,4 +25,11 @@ export class ScheduleMatchDto {
 
   @IsNumber()
   state: string;
+
+  @IsString()
+  date: string;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  players: number[];
 }

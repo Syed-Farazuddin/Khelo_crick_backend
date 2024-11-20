@@ -29,14 +29,20 @@ model Player {
   id           Int      @id @default(autoincrement())
   bowlingStyle String?
   battingStyle String?
+  imageUrl     String?
   wicketKeeper Boolean?
   allrounder   Boolean?
+  match        Match?   @relation("createdByPlayer")
   userId       Int      @unique
   user         User     @relation(fields: [userId], references: [id])
   statsId      Int      @unique
   stats        Stats    @relation(fields: [statsId], references: [id])
   matches      Match[]
   teams        Team[]   @relation("TeamPlayers")
+  // Scoring      Scoring? @relation(fields: [scoringId], references: [id])
+  // scoringId    Int?
+  // Scoring      Scoring? @relation(fields: [scoringId], references: [id])
+  // scoringId    Int?
 }
 
 model Stats {
@@ -52,13 +58,17 @@ model Stats {
 }
 
 model BowlingStats {
-  id      Int    @id @default(autoincrement())
-  stats   Stats?
-  matches Int    @default(0)
-  innings Int    @default(0)
-  wickets Int    @default(0)
-  noBalls Int    @default(0)
-  wides   Int    @default(0)
+  id         Int     @id @default(autoincrement())
+  stats      Stats?
+  matches    Int     @default(0)
+  innings    Int     @default(0)
+  wickets    Int     @default(0)
+  totalBowls Int     @default(0)
+  noBalls    Int     @default(0)
+  wides      Int     @default(0)
+  three_for  Int     @default(0)
+  fifer      Int     @default(0)
+  best       String?
 }
 
 model BattingStats {
@@ -66,16 +76,16 @@ model BattingStats {
   stats       Stats?
   matches     Int     @default(0)
   innings     Int     @default(0)
-  ballsPlayed BigInt  @default(0)
-  runs        BigInt  @default(0)
-  notOuts     BigInt  @default(0)
+  ballsPlayed Int     @default(0)
+  runs        Int     @default(0)
+  notOuts     Int     @default(0)
   average     Decimal @default(0)
   strikeRate  Decimal @default(0)
-  sixes       BigInt  @default(0)
-  fours       BigInt  @default(0)
-  ones        BigInt  @default(0)
-  twos        BigInt  @default(0)
-  threes      BigInt  @default(0)
+  sixes       Int     @default(0)
+  fours       Int     @default(0)
+  ones        Int     @default(0)
+  twos        Int     @default(0)
+  threes      Int     @default(0)
 }
 
 model FieldingStats {
@@ -109,8 +119,16 @@ model Match {
   ballType     String
   bowlingLimit Int
   overs        Int
+  createdById  Int      @unique
+  player       Player   @relation("createdByPlayer", fields: [createdById], references: [id])
   players      Player[]
   teams        Team[]
+}
+
+model Scoring {
+  id Int @id @default(autoincrement())
+  // Team1_players Player[] @relation("Team1Players")
+  // Team2_players Player[] @relation("Team2Players")
 }
 
 model Tournament {

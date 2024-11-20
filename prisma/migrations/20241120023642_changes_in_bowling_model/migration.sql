@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "BowlingStats" ADD COLUMN     "best" TEXT,
+ADD COLUMN     "fifer" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "three_for" INTEGER NOT NULL DEFAULT 0;
