@@ -6,6 +6,39 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class TeamService {
   constructor(private prismaService: PrismaService) {}
 
+  async getYourTeams(request: any) {
+    const userId = request.user.id;
+
+    const { teams } = await this.prismaService.player.findUnique({
+      where: {
+        userId: userId,
+      },
+      select: {
+        teams: {
+          select: {
+            id: true,
+            players: {
+              select: {
+                id: true,
+                battingStyle: true,
+                bowlingStyle: true,
+                imageUrl: true,
+                user: {
+                  select: {
+                    name: true,
+                  },
+                },
+              },
+            },
+            imageUrl: true,
+            name: true,
+          },
+        },
+      },
+    });
+    return teams;
+  }
+
   async createTeam(createTeamDto: createTeamDto, request: any) {
     const team = await this.prismaService.team.findUnique({
       where: {

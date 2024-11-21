@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   Param,
   ParseIntPipe,
   Post,
@@ -21,7 +22,7 @@ export class TeamController {
     return this.teamService.createTeam(createTeamDto, request);
   }
 
-  @Post(':id/player')
+  @Post(':id/add_player')
   addPlayer(
     @Body() addPlayerDto: addPlayerDto,
     @Param('id', ParseIntPipe) teamId: number,
@@ -32,5 +33,11 @@ export class TeamController {
   @Post(':id/delete_player')
   deletePlayer() {
     return this.teamService.deletePlayer();
+  }
+
+  @Get('get_your_teams')
+  @UseGuards(AuthGuard)
+  fetchYourTeams(@Request() request: any) {
+    return this.teamService.getYourTeams(request);
   }
 }
