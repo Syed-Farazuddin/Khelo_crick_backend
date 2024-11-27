@@ -20,8 +20,7 @@ export class createTeamDto {
 
 export class addPlayerDto {
   @IsString()
-  @IsOptional()
-  mobile?: string;
+  mobile: string;
 }
 
 export class createPlayerDto {

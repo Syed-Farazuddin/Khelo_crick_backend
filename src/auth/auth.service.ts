@@ -1,11 +1,13 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
+  createNewUserAndAddInTeam,
   sendOtpDto,
   updateFireBaseTokenDto,
   verifyOtpDto,
 } from './dtos/auth.dto';
 import { JwtService } from '@nestjs/jwt';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -67,51 +69,92 @@ export class AuthService {
     return pow;
   }
 
+  createUser = async (mobile?: string, name?: string, id?: number) => {
+    let user: User;
+    if (id == null) {
+      user = await this.prismaService.user.create({
+        data: {
+          mobile: mobile,
+          name: name,
+        },
+      });
+    }
+    const bowlingStatsId = await this.prismaService.bowlingStats.create({
+      data: {},
+      select: {
+        id: true,
+      },
+    });
+    const batStatsId = await this.prismaService.battingStats.create({
+      data: {},
+      select: {
+        id: true,
+      },
+    });
+    const fieldStatsId = await this.prismaService.fieldingStats.create({
+      data: {},
+      select: {
+        id: true,
+      },
+    });
+    const StatsId = await this.prismaService.stats.create({
+      data: {
+        batStatsId: batStatsId.id,
+        bowlStatsId: bowlingStatsId.id,
+        fieldStatsId: fieldStatsId.id,
+      },
+    });
+    const player = await this.prismaService.player.create({
+      data: {
+        userId: id ?? user.id,
+        statsId: StatsId.id,
+      },
+    });
+    return player;
+  };
+
+  async createNewUserAndAddInTeam(
+    createNewUserAndAddInTeam: createNewUserAndAddInTeam,
+  ) {
+    const player = await this.createUser(
+      createNewUserAndAddInTeam.mobile,
+      createNewUserAndAddInTeam.name,
+      null,
+    );
+    await this.prismaService.team.update({
+      where: {
+        id: createNewUserAndAddInTeam.teamId,
+      },
+      data: {
+        players: {
+          connect: { id: player.id },
+        },
+      },
+    });
+    return {
+      success: true,
+      playerExists: true,
+      message: 'Successfully added Player into your team',
+    };
+  }
+
   async verifyOtp(verifyOtp: verifyOtpDto) {
-    const { otp, id } = await this.prismaService.user.findFirst({
+    const { otp, id, name, mobile } = await this.prismaService.user.findFirst({
       where: {
         mobile: verifyOtp.mobile,
       },
       select: {
         otp: true,
         id: true,
+        name: true,
+        mobile: true,
       },
     });
     if (otp != Number.parseInt(verifyOtp.otp)) {
       throw new UnauthorizedException('Invalid Credentials');
     }
     if (verifyOtp.isNewPlayer) {
-      const bowlingStatsId = await this.prismaService.bowlingStats.create({
-        data: {},
-        select: {
-          id: true,
-        },
-      });
-      const batStatsId = await this.prismaService.battingStats.create({
-        data: {},
-        select: {
-          id: true,
-        },
-      });
-      const fieldStatsId = await this.prismaService.fieldingStats.create({
-        data: {},
-        select: {
-          id: true,
-        },
-      });
-      const StatsId = await this.prismaService.stats.create({
-        data: {
-          batStatsId: batStatsId.id,
-          bowlStatsId: bowlingStatsId.id,
-          fieldStatsId: fieldStatsId.id,
-        },
-      });
-      await this.prismaService.player.create({
-        data: {
-          userId: id,
-          statsId: StatsId.id,
-        },
-      });
+      await this.createUser(mobile, name, id);
     }
     const payload = JSON.stringify({
       mobile: verifyOtp.mobile,

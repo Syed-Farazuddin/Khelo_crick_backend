@@ -37,3 +37,9 @@ export class updateFireBaseTokenDto {
   @IsOptional()
   deviceId?: string;
 }
+
+export class createNewUserAndAddInTeam {
+  teamId: number;
+  mobile: string;
+  name: string;
+}

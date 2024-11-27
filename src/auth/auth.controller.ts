@@ -2,6 +2,7 @@ import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
+  createNewUserAndAddInTeam,
   sendOtpDto,
   updateFireBaseTokenDto,
   verifyOtpDto,
@@ -23,6 +24,13 @@ export class AuthController {
   @Post('verifyotp')
   verifyOtp(@Body() verifyOtpDto: verifyOtpDto) {
     return this.authService.verifyOtp(verifyOtpDto);
+  }
+
+  @Post('create_player_and_add_in_team')
+  createPlayerAndAddInTeam(
+    @Body() createPlayerAndAddInTeam: createNewUserAndAddInTeam,
+  ) {
+    return this.authService.createNewUserAndAddInTeam(createPlayerAndAddInTeam);
   }
 
   @UseGuards(AuthGuard)

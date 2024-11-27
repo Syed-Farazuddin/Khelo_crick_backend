@@ -22,7 +22,7 @@ export class MatchesService {
         overs: scheduleMatchDto.overs,
         state: scheduleMatchDto.state,
         players: {
-          connect: scheduleMatchDto.players.map((playerId) => ({
+          connect: scheduleMatchDto.teamAPlayers.map((playerId) => ({
             id: playerId,
           })),
         },

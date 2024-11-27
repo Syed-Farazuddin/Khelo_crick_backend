@@ -64,6 +64,11 @@ export class TeamService {
           },
         },
       });
+
+      return {
+        success: true,
+        message: 'Team Created!',
+      };
     }
     throw new ConflictException('A Team Already exists with this name');
   }
@@ -71,7 +76,10 @@ export class TeamService {
   async deleteTeam() {}
 
   async addPlayer(addPlayerDto: addPlayerDto, teamId: number) {
-    let { player } = await this.prismaService.user.findUnique({
+    if (addPlayerDto.mobile == '' || addPlayerDto.mobile.length != 10) {
+      throw new ConflictException('Please Enter a valid mobile Number');
+    }
+    let user = await this.prismaService.user.findFirst({
       where: {
         mobile: addPlayerDto.mobile,
       },
@@ -79,10 +87,29 @@ export class TeamService {
         player: {
           select: {
             id: true,
+            teams: {
+              select: {
+                id: true,
+              },
+            },
           },
         },
       },
     });
+
+    if (!user) {
+      return {
+        playerExists: false,
+        success: false,
+        message: 'Enter player Name and Try again',
+      };
+    }
+
+    const playerTeams = user.player.teams.filter((team) => team.id == teamId);
+
+    if (playerTeams.length != 0) {
+      throw new ConflictException('Player Already Exists in the current team');
+    }
 
     await this.prismaService.team.update({
       where: {
@@ -91,24 +118,30 @@ export class TeamService {
       data: {
         players: {
           connect: {
-            id: player.id,
+            id: user.player.id,
           },
         },
       },
     });
 
-    await this.prismaService.player.update({
-      where: {
-        id: teamId,
-      },
-      data: {
-        teams: {
-          connect: {
-            id: teamId,
-          },
-        },
-      },
-    });
+    // await this.prismaService.player.update({
+    //   where: {
+    //     id: teamId,
+    //   },
+    //   data: {
+    //     teams: {
+    //       connect: {
+    //         id: teamId,
+    //       },
+    //     },
+    //   },
+    // });
+
+    return {
+      success: true,
+      playerExists: true,
+      message: 'Player Added Successfully',
+    };
   }
 
   async deletePlayer() {}

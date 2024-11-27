@@ -31,5 +31,9 @@ export class ScheduleMatchDto {
 
   @IsArray()
   @ValidateNested({ each: true })
-  players: number[];
+  teamAPlayers: number[];
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  teamBPlayers: number[];
 }

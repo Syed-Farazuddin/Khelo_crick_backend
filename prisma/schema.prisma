@@ -16,6 +16,8 @@ model User {
   dob       String?
   player    Player?
   userToken UserToken?
+  Over      Over[]
+  Ball      Ball[]
 }
 
 model UserToken {
@@ -26,23 +28,22 @@ model UserToken {
 }
 
 model Player {
-  id           Int      @id @default(autoincrement())
-  bowlingStyle String?
-  battingStyle String?
-  imageUrl     String?
-  wicketKeeper Boolean?
-  allrounder   Boolean?
-  match        Match?   @relation("createdByPlayer")
-  userId       Int      @unique
-  user         User     @relation(fields: [userId], references: [id])
-  statsId      Int      @unique
-  stats        Stats    @relation(fields: [statsId], references: [id])
-  matches      Match[]
-  teams        Team[]   @relation("TeamPlayers")
-  // Scoring      Scoring? @relation(fields: [scoringId], references: [id])
-  // scoringId    Int?
-  // Scoring      Scoring? @relation(fields: [scoringId], references: [id])
-  // scoringId    Int?
+  id            Int             @id @default(autoincrement())
+  bowlingStyle  String?
+  battingStyle  String?
+  imageUrl      String?
+  wicketKeeper  Boolean?
+  allrounder    Boolean?
+  match         Match?          @relation("createdByPlayer")
+  userId        Int             @unique
+  user          User            @relation(fields: [userId], references: [id])
+  statsId       Int             @unique
+  stats         Stats           @relation(fields: [statsId], references: [id])
+  teamAPlayers  Match[]         @relation("teamAPlayers")
+  teamBPlayers  Match[]         @relation("teamBPlayers")
+  teams         Team[]          @relation("PlayerTeams")
+  battingSchema BattingSchema[]
+  bowlingSchema BowlingSchema[]
 }
 
 model Stats {
@@ -99,16 +100,18 @@ model FieldingStats {
 }
 
 model Team {
-  id           Int          @id @default(autoincrement())
-  name         String?      @unique
+  id           Int           @id @default(autoincrement())
+  name         String?       @unique
   imageUrl     String?
   matches      Match[]
-  totalMatches Int          @default(0)
-  wins         Int          @default(0)
-  losses       Int          @default(0)
-  draws        Int          @default(0)
-  players      Player[]     @relation("TeamPlayers")
+  totalMatches Int           @default(0)
+  wins         Int           @default(0)
+  losses       Int           @default(0)
+  draws        Int           @default(0)
+  players      Player[]      @relation("PlayerTeams")
   tournaments  Tournament[]
+  BattingTeam  BattingTeam[]
+  BowlingTeam  BowlingTeam[]
 }
 
 model Match {
@@ -121,14 +124,91 @@ model Match {
   overs        Int
   createdById  Int      @unique
   player       Player   @relation("createdByPlayer", fields: [createdById], references: [id])
-  players      Player[]
+  teamAPlayers Player[] @relation("teamAPlayers")
+  teamBPlayers Player[] @relation("teamBPlayers")
   teams        Team[]
 }
 
-model Scoring {
-  id Int @id @default(autoincrement())
-  // Team1_players Player[] @relation("Team1Players")
-  // Team2_players Player[] @relation("Team2Players")
+model Innings {
+  id           Int             @id @default(autoincrement())
+  batting      BattingSchema[]
+  bowling      BowlingSchema[]
+  totalRuns    Int             @default(0)
+  extras       Int             @default(0)
+  totalWides   Int             @default(0)
+  totalNoBalls Int             @default(0)
+  bytes        Int             @default(0)
+  oversPlayed  Int             @default(0)
+}
+
+model BattingTeam {
+  id      Int             @id @default(autoincrement())
+  teamId  Int
+  team    Team            @relation(fields: [teamId], references: [id])
+  batmens BattingSchema[]
+}
+
+model BowlingTeam {
+  id      Int             @id @default(autoincrement())
+  teamId  Int
+  team    Team            @relation(fields: [teamId], references: [id])
+  bowlers BowlingSchema[]
+}
+
+model BattingSchema {
+  id            Int          @id @default(autoincrement())
+  playerName    String?
+  playerId      Int?
+  player        Player?      @relation(fields: [playerId], references: [id])
+  inningsId     Int?
+  Innings       Innings?     @relation(fields: [inningsId], references: [id])
+  runsScores    Int[]
+  totalRuns     Int
+  fours         Int
+  sixes         Int
+  isOut         Boolean      @default(false)
+  BattingTeam   BattingTeam? @relation(fields: [battingTeamId], references: [id])
+  battingTeamId Int?
+}
+
+model BowlingSchema {
+  id            Int          @id @default(autoincrement())
+  playerId      Int?
+  player        Player?      @relation(fields: [playerId], references: [id])
+  Innings       Innings?     @relation(fields: [inningsId], references: [id])
+  inningsId     Int?
+  oversBowled   Int          @default(0)
+  order         Int          @default(0)
+  over          Over[]
+  isCompleted   Boolean      @default(false)
+  BowlingTeam   BowlingTeam? @relation(fields: [bowlingTeamId], references: [id])
+  bowlingTeamId Int?
+  overLeft      Int
+}
+
+model Ball {
+  id           Int     @id @default(autoincrement())
+  isWide       Boolean @default(false)
+  isNoBall     Boolean @default(false)
+  isBye        Boolean @default(false)
+  isWicket     Boolean @default(false)
+  isRunOut     Boolean @default(false)
+  runs         Int
+  playedById   Int
+  playedByUser User?   @relation(fields: [playedById], references: [id])
+  order        Int
+  Over         Over?   @relation(fields: [overId], references: [id])
+  overId       Int?
+}
+
+model Over {
+  id            Int            @id @default(autoincrement())
+  bowlerId      Int?
+  balls         Ball[]
+  order         Int
+  BowlingSchema BowlingSchema? @relation(fields: [bowlerId], references: [id])
+  User          User?          @relation(fields: [userId], references: [id])
+  userId        Int?
 }
 
 model Tournament {
