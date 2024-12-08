@@ -119,6 +119,25 @@ export class MatchesService {
           },
         },
       },
+      select: {
+        ballType: true,
+        bowlingLimit: true,
+        chooseToBall: true,
+        chooseToBat: true,
+        createdById: true,
+        createdByPlayer: true,
+        date: true,
+        firstInnings: true,
+        secondInnings: true,
+        ground: true,
+        id: true,
+        inningsA: true,
+        inningsB: true,
+        overs: true,
+        state: true,
+        tossTeam: true,
+        tossWonTeamId: true,
+      },
     });
     return createMatch;
   }
