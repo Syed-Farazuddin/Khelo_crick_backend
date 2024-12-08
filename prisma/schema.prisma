@@ -188,9 +188,9 @@ model BattingSchema {
   player        Player?      @relation(fields: [playerId], references: [id])
   inningsId     Int?
   runsScores    Int[]
-  totalRuns     Int
-  fours         Int
-  sixes         Int
+  totalRuns     Int          @default(0)
+  fours         Int          @default(0)
+  sixes         Int          @default(0)
   isOut         Boolean      @default(false)
   BattingTeam   BattingTeam? @relation(fields: [battingTeamId], references: [id])
   battingTeamId Int?

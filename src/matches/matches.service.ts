@@ -129,6 +129,102 @@ export class MatchesService {
         id: id,
       },
     });
+    let over: any = await this.prismaService.over.findUnique({
+      where: {
+        id: scoring.overId,
+      },
+    });
+
+    const delivery = await this.prismaService.ball.create({
+      data: {
+        order: scoring.ball,
+        runs: scoring.runs,
+        isWide: scoring.isWide,
+        isBye: scoring.isBye,
+        isNoBall: scoring.isNoBall,
+        isRunOut: scoring.isRunOut,
+        isWicket: scoring.isWicket,
+        playedById: myInnings.strikerId,
+      },
+    });
+
+    over = await this.prismaService.over.update({
+      where: {
+        id: scoring.overId,
+      },
+      data: {
+        balls: {
+          connect: {
+            id: delivery.id,
+          },
+        },
+      },
+      select: {
+        balls: true,
+        id: true,
+        bowlerId: true,
+        BowlingSchema: true,
+      },
+    });
+    let bowler = await this.prismaService.bowlingSchema.update({
+      where: {
+        id: scoring.bowlerId,
+      },
+      data: {
+        over: {
+          connect: {
+            id: over.id,
+          },
+        },
+      },
+    });
+
+    let bowlsBowled = over.balls.filter(
+      (ball) => !ball.isWide || !ball.isNoBall,
+    ).length;
+
+    let runsScored: number = scoring.runs;
+    let isExtra: boolean = false;
+    if (scoring.isWide || scoring.isNoBall) {
+      runsScored += 1;
+      isExtra = true;
+    }
+
+    if ((isExtra && runsScored % 2 == 0) || runsScored % 2 != 0) {
+      await this.prismaService.innings.update({
+        where: {
+          id: myInnings.id,
+        },
+        data: {
+          strikerId: myInnings.nonStrikerId,
+          nonStrikerId: myInnings.strikerId,
+          totalRuns: myInnings.totalRuns + runsScored,
+          extras: isExtra ? myInnings.extras + runsScored : myInnings.extras,
+          totalNoBalls: scoring.isNoBall
+            ? myInnings.totalNoBalls + 1
+            : myInnings.totalNoBalls,
+          totalWides: scoring.isWide
+            ? myInnings.totalWides + runsScored
+            : myInnings.totalWides,
+        },
+      });
+    } else {
+      await this.prismaService.innings.update({
+        where: {
+          id: myInnings.id,
+        },
+        data: {
+          totalRuns: myInnings.totalRuns + runsScored,
+          extras: isExtra ? myInnings.extras + runsScored : myInnings.extras,
+          totalNoBalls: scoring.isNoBall
+            ? myInnings.totalNoBalls + 1
+            : myInnings.totalNoBalls,
+          totalWides: scoring.isWide
+            ? myInnings.totalWides + runsScored
+            : myInnings.totalWides,
+        },
+      });
+    }
 
     const battingTeam = await this.prismaService.battingTeam.findFirst({
       where: {
@@ -178,28 +274,50 @@ export class MatchesService {
     request: any,
     inningsId: number,
   ) {
-    const strikerIsOut = await this.prismaService.battingSchema.findFirst({
+    let striker = await this.prismaService.battingSchema.findFirst({
       where: {
         inningsId: inningsId,
         playerId: scoring.strikerId,
       },
     });
 
-    if (strikerIsOut.isOut) {
+    if (!striker) {
+      striker = await this.prismaService.battingSchema.create({
+        data: {
+          fours: 0,
+          totalRuns: 0,
+          sixes: 0,
+          playerId: scoring.strikerId,
+        },
+      });
+    }
+
+    if (striker.isOut) {
       return {
         success: false,
         message: 'Cannot select striker who is already out',
       };
     }
 
-    const nonStrikerIsOut = await this.prismaService.battingSchema.findFirst({
+    let nonStriker = await this.prismaService.battingSchema.findFirst({
       where: {
         inningsId: inningsId,
         playerId: scoring.nonStrikerId,
       },
     });
 
-    if (nonStrikerIsOut.isOut) {
+    if (!nonStriker) {
+      nonStriker = await this.prismaService.battingSchema.create({
+        data: {
+          fours: 0,
+          totalRuns: 0,
+          sixes: 0,
+          playerId: scoring.nonStrikerId,
+        },
+      });
+    }
+
+    if (nonStriker.isOut) {
       return {
         success: false,
         message: 'Cannot select non Striker who is already out',
@@ -212,7 +330,7 @@ export class MatchesService {
       },
       data: {
         strikerId: scoring.strikerId,
-        nonStrikerId: scoring.nonStrikerId,
+        nonStrikerId: scoring.strikerId,
       },
     });
     return innings;
@@ -231,7 +349,7 @@ export class MatchesService {
     let bowler = await this.prismaService.bowlingSchema.findFirst({
       where: {
         inningsId: inningsId,
-        playerId: selectBowlerDto.bowlerId,
+        playerId: selectBowlerDto.playerId,
       },
     });
 
@@ -241,7 +359,7 @@ export class MatchesService {
           overLeft: match.bowlingLimit,
           order: selectBowlerDto.order,
           inningsId: inningsId,
-          playerId: selectBowlerDto.bowlerId,
+          playerId: selectBowlerDto.playerId,
         },
       });
     }
@@ -254,6 +372,24 @@ export class MatchesService {
       };
     }
 
-    return bowler;
+    const over = await this.prismaService.over.create({
+      data: {
+        bowlerId: bowler.id,
+        order: selectBowlerDto.order,
+      },
+    });
+
+    return { bowler, over };
+  }
+
+  async updateBowler(body: selectBowlerDto, request: any) {
+    return this.prismaService.over.update({
+      where: {
+        id: body.overId,
+      },
+      data: {
+        bowlerId: body.playerId,
+      },
+    });
   }
 }

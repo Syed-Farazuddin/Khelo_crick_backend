@@ -59,6 +59,15 @@ export class MatchesController {
     );
   }
 
+  @Post(':id/scoring/update_bowler')
+  @UseGuards(AuthGuard)
+  updateBowler(
+    @Body() selectBowlerDto: selectBowlerDto,
+    @Request() request: any,
+  ) {
+    return this.matchesService.updateBowler(selectBowlerDto, request);
+  }
+
   @Post(':id/scoring/select_batsman')
   @UseGuards(AuthGuard)
   selectBatsman(

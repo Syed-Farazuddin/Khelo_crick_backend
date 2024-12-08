@@ -14,7 +14,7 @@
 
     {
       "command": "nest start --debug --watch",
-      "name": "debug",
+      "name": "Start and debug",
       "request": "launch",
       "type": "node-terminal"
     },

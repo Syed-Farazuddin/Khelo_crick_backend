@@ -117,8 +117,13 @@ export class selectBatsmanDto {
 
 export class selectBowlerDto {
   @IsNumber()
-  bowlerId: number;
+  playerId: number;
 
   @IsNumber()
-  order: number;
+  @IsOptional()
+  order?: number;
+
+  @IsNumber()
+  @IsOptional()
+  overId?: number;
 }
