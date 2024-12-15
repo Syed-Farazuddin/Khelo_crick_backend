@@ -16,8 +16,6 @@ model User {
   dob       String?
   player    Player?
   userToken UserToken?
-  Over      Over[]
-  Ball      Ball[]
   Team      Team[]     @relation("TeamCreatedBy")
   isActive  Boolean    @default(true)
 }
@@ -48,6 +46,8 @@ model Player {
   bowlingSchema BowlingSchema[]
   striker       Innings[]       @relation("nonStriker")
   nonStriker    Innings[]       @relation("Striker")
+  Ball          Ball[]
+  Over          Over[]
 }
 
 model Stats {
@@ -221,7 +221,7 @@ model Ball {
   isRunOut     Boolean @default(false)
   runs         Int
   playedById   Int
-  playedByUser User?   @relation(fields: [playedById], references: [id])
+  playedByUser Player? @relation(fields: [playedById], references: [id])
   order        Int
   Over         Over?   @relation(fields: [overId], references: [id])
   overId       Int?
@@ -233,8 +233,8 @@ model Over {
   balls         Ball[]
   order         Int
   BowlingSchema BowlingSchema? @relation(fields: [bowlerId], references: [id])
-  User          User?          @relation(fields: [userId], references: [id])
-  userId        Int?
+  player        Player?        @relation(fields: [playerId], references: [id])
+  playerId      Int?
 }
 
 model Tournament {

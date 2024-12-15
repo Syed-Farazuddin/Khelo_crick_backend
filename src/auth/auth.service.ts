@@ -25,6 +25,7 @@ export class AuthService {
         name: true,
       },
     });
+
     if (!user) {
       await this.prismaService.user.create({
         data: {

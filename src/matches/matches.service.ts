@@ -143,7 +143,7 @@ export class MatchesService {
   }
 
   async scoring(scoring: any, user: any, id: number) {
-    const myInnings = await this.prismaService.innings.findUnique({
+    let myInnings = await this.prismaService.innings.findUnique({
       where: {
         id: id,
       },
@@ -158,11 +158,11 @@ export class MatchesService {
       data: {
         order: scoring.ball,
         runs: scoring.runs,
-        isWide: scoring.isWide,
-        isBye: scoring.isBye,
-        isNoBall: scoring.isNoBall,
-        isRunOut: scoring.isRunOut,
-        isWicket: scoring.isWicket,
+        isWide: scoring.isWide ?? false,
+        isBye: scoring.isBye ?? false,
+        isNoBall: scoring.isNoBall ?? false,
+        isRunOut: scoring.isRunOut ?? false,
+        isWicket: scoring.isWicket ?? false,
         playedById: myInnings.strikerId,
       },
     });
@@ -210,7 +210,7 @@ export class MatchesService {
     }
 
     if ((isExtra && runsScored % 2 == 0) || runsScored % 2 != 0) {
-      await this.prismaService.innings.update({
+      myInnings = await this.prismaService.innings.update({
         where: {
           id: myInnings.id,
         },
@@ -228,7 +228,7 @@ export class MatchesService {
         },
       });
     } else {
-      await this.prismaService.innings.update({
+      myInnings = await this.prismaService.innings.update({
         where: {
           id: myInnings.id,
         },
@@ -398,7 +398,25 @@ export class MatchesService {
       },
     });
 
-    return { bowler, over };
+    const bowlerDetails = {
+      id: bowler.id,
+      inningsId: bowler.inningsId,
+      oversBowled: bowler.oversBowled,
+      order: over.order,
+      isCompleted: bowler.overLeft <= 0,
+      bowlingTeamId: bowler.bowlingTeamId,
+      overleft: bowler.overLeft,
+    };
+
+    const overDetails = {
+      id: over.id,
+      order: over.order,
+      bowlerId: over.bowlerId,
+    };
+    return {
+      bowler: bowlerDetails,
+      over: overDetails,
+    };
   }
 
   async updateBowler(body: selectBowlerDto, request: any) {

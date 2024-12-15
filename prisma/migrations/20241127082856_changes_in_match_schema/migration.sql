@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE "Match" ALTER COLUMN "date" DROP NOT NULL;
