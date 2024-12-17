@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   Param,
   ParseIntPipe,
   Post,
@@ -80,5 +81,11 @@ export class MatchesController {
       request,
       inningsId,
     );
+  }
+
+  @Get('innings/:id')
+  @UseGuards(AuthGuard)
+  getInningsData(@Param('id', ParseIntPipe) inningsId: number) {
+    return this.matchesService.findInnings(inningsId);
   }
 }

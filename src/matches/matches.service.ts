@@ -209,6 +209,36 @@ export class MatchesService {
       isExtra = true;
     }
 
+    if (!isExtra) {
+      const bowler = await this.prismaService.player.findUnique({
+        where: {
+          id: scoring.bowlerId,
+        },
+        select: {
+          user: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      });
+      await this.prismaService.battingSchema.updateMany({
+        where: {
+          playerId: myInnings.strikerId,
+          inningsId: myInnings.id,
+        },
+        data: {
+          runsScores: {
+            push: runsScored,
+          },
+          bowlerName: bowler.user.name,
+          totalRuns: {
+            increment: runsScored,
+          },
+        },
+      });
+    }
+
     if ((isExtra && runsScored % 2 == 0) || runsScored % 2 != 0) {
       myInnings = await this.prismaService.innings.update({
         where: {
@@ -258,6 +288,7 @@ export class MatchesService {
     });
 
     return {
+      success: true,
       myInnings,
       battingTeam,
       bowlingTeam,
@@ -265,11 +296,87 @@ export class MatchesService {
   }
 
   async findInnings(inningsId: number) {
-    return await this.prismaService.innings.findUnique({
+    const innings = await this.prismaService.innings.findUnique({
       where: {
         id: inningsId,
       },
+      select: {
+        totalRuns: true,
+        extras: true,
+        id: true,
+        striker: {
+          select: {
+            user: {
+              select: {
+                name: true,
+                player: true,
+              },
+            },
+          },
+        },
+        nonStriker: {
+          select: {
+            user: {
+              select: {
+                name: true,
+                mobile: true,
+                age: true,
+                dob: true,
+                player: true,
+              },
+            },
+          },
+        },
+        bowling: true,
+        batting: true,
+        bytes: true,
+        isCompleted: true,
+        nonStrikerId: true,
+        oversPlayed: true,
+        strikerId: true,
+        totalNoBalls: true,
+        totalWides: true,
+      },
     });
+
+    const strikerScore = await this.prismaService.battingSchema.findFirst({
+      where: {
+        inningsId: innings.id,
+        playerId: innings.strikerId,
+      },
+    });
+
+    const nonStrikerScore = await this.prismaService.battingSchema.findFirst({
+      where: {
+        inningsId: innings.id,
+        playerId: innings.nonStrikerId,
+      },
+    });
+
+    const MappedInnings = {
+      totalRuns: innings.totalRuns,
+      extras: innings.extras,
+      bowling: innings.bowling,
+      batting: innings.batting,
+      isCompleted: innings.isCompleted,
+      oversPlayed: innings.oversPlayed,
+      strikerId: innings.strikerId,
+      nonStrikerId: innings.nonStrikerId,
+      totalNoBalls: innings.totalNoBalls,
+      totalWides: innings.totalWides,
+      bytes: innings.bytes,
+      id: innings.id,
+      striker: {
+        user: innings.striker.user,
+        score: strikerScore,
+      },
+      nonStriker: {
+        user: innings.nonStriker.user,
+        score: nonStrikerScore,
+      },
+    };
+
+    return MappedInnings;
   }
 
   async findMatch(inningsId: number) {
@@ -307,6 +414,7 @@ export class MatchesService {
           totalRuns: 0,
           sixes: 0,
           playerId: scoring.strikerId,
+          inningsId: inningsId,
         },
       });
     }
@@ -332,6 +440,7 @@ export class MatchesService {
           totalRuns: 0,
           sixes: 0,
           playerId: scoring.nonStrikerId,
+          inningsId: inningsId,
         },
       });
     }
@@ -349,7 +458,7 @@ export class MatchesService {
       },
       data: {
         strikerId: scoring.strikerId,
-        nonStrikerId: scoring.strikerId,
+        nonStrikerId: scoring.nonStrikerId,
       },
     });
     return innings;
@@ -368,7 +477,7 @@ export class MatchesService {
     let bowler = await this.prismaService.bowlingSchema.findFirst({
       where: {
         inningsId: inningsId,
-        playerId: selectBowlerDto.playerId,
+        playerId: selectBowlerDto.bowlerId,
       },
     });
 
@@ -378,7 +487,7 @@ export class MatchesService {
           overLeft: match.bowlingLimit,
           order: selectBowlerDto.order,
           inningsId: inningsId,
-          playerId: selectBowlerDto.playerId,
+          playerId: selectBowlerDto.bowlerId,
         },
       });
     }
@@ -425,7 +534,7 @@ export class MatchesService {
         id: body.overId,
       },
       data: {
-        bowlerId: body.playerId,
+        bowlerId: body.bowlerId,
       },
     });
   }
