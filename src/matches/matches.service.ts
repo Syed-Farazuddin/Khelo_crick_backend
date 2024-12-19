@@ -152,7 +152,26 @@ export class MatchesService {
       where: {
         id: scoring.overId,
       },
+      select: {
+        balls: true,
+        id: true,
+        bowlerId: true,
+        BowlingSchema: true,
+      },
     });
+
+    let bowlsBowled = over.balls.filter(
+      (ball) => !ball.isWide || !ball.isNoBall,
+    ).length;
+
+    if (bowlsBowled >= 6) {
+      return {
+        success: false,
+        myInnings,
+        message: 'Over is Completed! Please select other bowler',
+        selectNewBowler: true,
+      };
+    }
 
     const delivery = await this.prismaService.ball.create({
       data: {
@@ -185,6 +204,7 @@ export class MatchesService {
         BowlingSchema: true,
       },
     });
+
     let bowler = await this.prismaService.bowlingSchema.update({
       where: {
         id: scoring.bowlerId,
@@ -198,7 +218,7 @@ export class MatchesService {
       },
     });
 
-    let bowlsBowled = over.balls.filter(
+    bowlsBowled = over.balls.filter(
       (ball) => !ball.isWide || !ball.isNoBall,
     ).length;
 
@@ -222,6 +242,7 @@ export class MatchesService {
           },
         },
       });
+
       await this.prismaService.battingSchema.updateMany({
         where: {
           playerId: myInnings.strikerId,
@@ -289,9 +310,11 @@ export class MatchesService {
 
     return {
       success: true,
+      message: 'Synced',
       myInnings,
       battingTeam,
       bowlingTeam,
+      selectNewBowler: bowlsBowled >= 6 ? true : false,
     };
   }
 
@@ -327,6 +350,17 @@ export class MatchesService {
             },
           },
         },
+        bowler: {
+          select: {
+            user: {
+              select: {
+                name: true,
+                player: true,
+              },
+            },
+          },
+        },
+        bowlerId: true,
         bowling: true,
         batting: true,
         bytes: true,
@@ -343,6 +377,21 @@ export class MatchesService {
       where: {
         inningsId: innings.id,
         playerId: innings.strikerId,
+      },
+    });
+
+    const bowler = await this.prismaService.bowlingSchema.findFirst({
+      where: {
+        inningsId: innings.id,
+        playerId: innings?.bowlerId,
+      },
+      select: {
+        over: {
+          select: { balls: true },
+        },
+        isCompleted: true,
+        order: true,
+        playerId: true,
       },
     });
 
@@ -366,6 +415,7 @@ export class MatchesService {
       totalWides: innings.totalWides,
       bytes: innings.bytes,
       id: innings.id,
+      bowlerId: innings.bowlerId,
       striker: {
         user: innings.striker.user,
         score: strikerScore,
@@ -373,6 +423,10 @@ export class MatchesService {
       nonStriker: {
         user: innings.nonStriker.user,
         score: nonStrikerScore,
+      },
+      bowler: {
+        user: innings?.bowler?.user,
+        score: bowler,
       },
     };
 
@@ -522,6 +576,16 @@ export class MatchesService {
       order: over.order,
       bowlerId: over.bowlerId,
     };
+
+    await this.prismaService.innings.update({
+      where: {
+        id: inningsId,
+      },
+      data: {
+        bowlerId: selectBowlerDto.bowlerId,
+      },
+    });
+
     return {
       bowler: bowlerDetails,
       over: overDetails,
@@ -529,7 +593,8 @@ export class MatchesService {
   }
 
   async updateBowler(body: selectBowlerDto, request: any) {
-    return this.prismaService.over.update({
+    // await this.prismaService.innings.
+    return await this.prismaService.over.update({
       where: {
         id: body.overId,
       },

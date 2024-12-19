@@ -46,6 +46,7 @@ model Player {
   bowlingSchema BowlingSchema[]
   striker       Innings[]       @relation("nonStriker")
   nonStriker    Innings[]       @relation("Striker")
+  bowler        Innings[]       @relation("bowler")
   Ball          Ball[]
   Over          Over[]
 }
@@ -159,6 +160,8 @@ model Innings {
   nonStriker   Player?       @relation("nonStriker", fields: [nonStrikerId], references: [id])
   nonStrikerId Int?
   strikerId    Int?
+  bowlerId     Int?
+  bowler       Player?       @relation("bowler", fields: [bowlerId], references: [id])
   inningsA     Match[]       @relation("firstInnings")
   inningsB     Match[]       @relation("secondInnings")
 }
