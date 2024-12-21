@@ -160,6 +160,15 @@ export class MatchesService {
       },
     });
 
+    if (!over) {
+      return {
+        success: false,
+        myInnings,
+        message: 'Select New Bowler',
+        selectNewBowler: true,
+      };
+    }
+
     let bowlsBowled = over.balls.filter(
       (ball) => !ball.isWide || !ball.isNoBall,
     ).length;
@@ -252,7 +261,7 @@ export class MatchesService {
           runsScores: {
             push: runsScored,
           },
-          bowlerName: bowler.user.name,
+          bowlerName: bowler?.user?.name,
           totalRuns: {
             increment: runsScored,
           },
@@ -528,6 +537,66 @@ export class MatchesService {
       return new ConflictException('No Matches exists for this innings!');
     }
     const innings = await this.findInnings(inningsId);
+
+    if (innings.bowlerId != null) {
+      const bowlingData = await this.prismaService.bowlingSchema.findFirst({
+        where: {
+          inningsId: innings.id,
+          playerId: innings.bowlerId,
+        },
+        select: {
+          over: {
+            orderBy: {
+              order: 'desc',
+            },
+            select: {
+              balls: true,
+              order: true,
+            },
+          },
+          overLeft: true,
+        },
+      });
+
+      const lastover = bowlingData.over[bowlingData.over.length - 1];
+      if (lastover.balls.length >= 6) {
+        let previousBowlerUpdate =
+          await this.prismaService.bowlingSchema.updateMany({
+            where: {
+              inningsId: innings.id,
+              playerId: innings.bowlerId,
+            },
+            data: {
+              oversBowled: {
+                increment: 1,
+              },
+              overLeft: {
+                decrement: 1,
+              },
+              isCompleted: bowlingData.overLeft - 1 <= 0 ? true : false,
+            },
+          });
+        await this.prismaService.innings.update({
+          where: {
+            id: innings.id,
+          },
+          data: {
+            oversPlayed: {
+              increment: 1,
+            },
+          },
+        });
+        console.log(previousBowlerUpdate);
+      }
+    }
+
+    // if (innings?.bowlerId == selectBowlerDto.bowlerId) {
+    //   return {
+    //     success: false,
+    //     messgae: 'Select Different Bowlers',
+    //   };
+    // }
+
     let bowler = await this.prismaService.bowlingSchema.findFirst({
       where: {
         inningsId: inningsId,
