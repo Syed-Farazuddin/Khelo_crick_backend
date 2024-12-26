@@ -15,4 +15,8 @@ export class ProfileDto {
   @IsString()
   @IsOptional()
   dob?: string;
+
+  @IsString()
+  @IsOptional()
+  imageUrl?: string;
 }

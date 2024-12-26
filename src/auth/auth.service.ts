@@ -166,6 +166,9 @@ export class AuthService {
       success: true,
       token: token,
       message: 'Successfully Verified OTP',
+      id: id,
+      name: name,
+      mobile: mobile,
     };
   }
 
