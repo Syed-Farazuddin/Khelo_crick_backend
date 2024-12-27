@@ -94,6 +94,10 @@ export class MatchesService {
         },
       },
     });
+    let teamAPlayers = startMatchDto.teamAPlayers;
+    let teamBPlayers = startMatchDto.teamBPlayers;
+    let players = [...teamAPlayers, ...teamBPlayers];
+
     const createMatch = await this.prismaService.match.create({
       data: {
         ballType: startMatchDto.ballType,
@@ -106,6 +110,9 @@ export class MatchesService {
           connect: {
             id: startMatchDto.tossWonTeamId,
           },
+        },
+        players: {
+          connect: players.map((id) => ({ id })),
         },
         state: startMatchDto.state,
         firstInnings: {
@@ -139,26 +146,6 @@ export class MatchesService {
         tossWonTeamId: true,
       },
     });
-
-    // let playersA = startMatchDto.teamAPlayers;
-    // let playerB = startMatchDto.teamBPlayers;
-
-    // let players = [...playersA, playerB];
-
-    // const promises = players.map((player: number) => {
-    //   this.prismaService.match.update({
-    //     where: {
-    //       id: createMatch.id,
-    //     },
-    //     data: {
-    //       players: {
-    //         connect: {
-    //           id: player,
-    //         },
-    //       },
-    //     },
-    //   });
-    // });
 
     return createMatch;
   }
