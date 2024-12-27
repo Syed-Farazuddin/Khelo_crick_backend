@@ -46,6 +46,12 @@ export class MatchesController {
     return this.matchesService.scoring(scoring, request, inningsId);
   }
 
+  @Post('your_matches')
+  @UseGuards(AuthGuard)
+  getYourMatches(@Request() request: any) {
+    return this.matchesService.yourMatches(request.user.id);
+  }
+
   @Post(':id/scoring/select_bowler')
   @UseGuards(AuthGuard)
   selectBowler(

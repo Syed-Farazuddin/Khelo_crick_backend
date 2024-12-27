@@ -242,19 +242,11 @@ CREATE TABLE "_TeamToTournament" (
 );
 
 -- CreateTable
-CREATE TABLE "_teamAPlayers" (
+CREATE TABLE "_players" (
     "A" INTEGER NOT NULL,
     "B" INTEGER NOT NULL,
 
-    CONSTRAINT "_teamAPlayers_AB_pkey" PRIMARY KEY ("A","B")
-);
-
--- CreateTable
-CREATE TABLE "_teamBPlayers" (
-    "A" INTEGER NOT NULL,
-    "B" INTEGER NOT NULL,
-
-    CONSTRAINT "_teamBPlayers_AB_pkey" PRIMARY KEY ("A","B")
+    CONSTRAINT "_players_AB_pkey" PRIMARY KEY ("A","B")
 );
 
 -- CreateTable
@@ -299,10 +291,7 @@ CREATE INDEX "_PlayerTeams_B_index" ON "_PlayerTeams"("B");
 CREATE INDEX "_TeamToTournament_B_index" ON "_TeamToTournament"("B");
 
 -- CreateIndex
-CREATE INDEX "_teamAPlayers_B_index" ON "_teamAPlayers"("B");
-
--- CreateIndex
-CREATE INDEX "_teamBPlayers_B_index" ON "_teamBPlayers"("B");
+CREATE INDEX "_players_B_index" ON "_players"("B");
 
 -- CreateIndex
 CREATE INDEX "_MatchToTeam_B_index" ON "_MatchToTeam"("B");
@@ -398,16 +387,10 @@ ALTER TABLE "_TeamToTournament" ADD CONSTRAINT "_TeamToTournament_A_fkey" FOREIG
 ALTER TABLE "_TeamToTournament" ADD CONSTRAINT "_TeamToTournament_B_fkey" FOREIGN KEY ("B") REFERENCES "Tournament"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_teamAPlayers" ADD CONSTRAINT "_teamAPlayers_A_fkey" FOREIGN KEY ("A") REFERENCES "Match"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "_players" ADD CONSTRAINT "_players_A_fkey" FOREIGN KEY ("A") REFERENCES "Match"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_teamAPlayers" ADD CONSTRAINT "_teamAPlayers_B_fkey" FOREIGN KEY ("B") REFERENCES "Player"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "_teamBPlayers" ADD CONSTRAINT "_teamBPlayers_A_fkey" FOREIGN KEY ("A") REFERENCES "Match"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "_teamBPlayers" ADD CONSTRAINT "_teamBPlayers_B_fkey" FOREIGN KEY ("B") REFERENCES "Player"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "_players" ADD CONSTRAINT "_players_B_fkey" FOREIGN KEY ("B") REFERENCES "Player"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_MatchToTeam" ADD CONSTRAINT "_MatchToTeam_A_fkey" FOREIGN KEY ("A") REFERENCES "Match"("id") ON DELETE CASCADE ON UPDATE CASCADE;

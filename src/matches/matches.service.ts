@@ -10,6 +10,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 @Injectable()
 export class MatchesService {
   constructor(private prismaService: PrismaService) {}
+
   async scheduleMatch(scheduleMatchDto: ScheduleMatchDto, request: any) {
     const user = request.user;
     const createMatch = await this.prismaService.match.create({
@@ -450,6 +451,37 @@ export class MatchesService {
     return MappedInnings;
   }
 
+  async yourMatches(id: number) {
+    return await this.prismaService.match.findMany({
+      where: {
+        players: {
+          some: {
+            id: id,
+          },
+        },
+      },
+      select: {
+        chooseToBall: true,
+        chooseToBat: true,
+        ballType: true,
+        bowlingLimit: true,
+        createdById: true,
+        createdByPlayer: true,
+        firstInnings: true,
+        secondInnings: true,
+        state: true,
+        ground: true,
+        date: true,
+        id: true,
+        inningsA: true,
+        inningsB: true,
+        teams: true,
+        overs: true,
+        tossWonTeamId: true,
+      },
+    });
+  }
+
   async findMatch(inningsId: number) {
     let match = await this.prismaService.match.findFirst({
       where: {
@@ -546,6 +578,24 @@ export class MatchesService {
     }
     const innings = await this.findInnings(inningsId);
 
+    let bowler = await this.prismaService.bowlingSchema.findFirst({
+      where: {
+        inningsId: inningsId,
+        playerId: selectBowlerDto.bowlerId,
+      },
+    });
+
+    if (!bowler) {
+      bowler = await this.prismaService.bowlingSchema.create({
+        data: {
+          overLeft: match.bowlingLimit,
+          order: selectBowlerDto.order,
+          inningsId: inningsId,
+          playerId: selectBowlerDto.bowlerId,
+        },
+      });
+    }
+
     if (innings.bowlerId != null) {
       const bowlingData = await this.prismaService.bowlingSchema.findFirst({
         where: {
@@ -565,6 +615,14 @@ export class MatchesService {
           overLeft: true,
         },
       });
+
+      if (bowler.overLeft <= 0) {
+        return {
+          success: false,
+          message:
+            "Bowler's overlimit has completed! Please select other bowler to continue",
+        };
+      }
 
       if (innings.bowlerId == selectBowlerDto.bowlerId) {
         return {
@@ -604,32 +662,6 @@ export class MatchesService {
         });
         console.log(previousBowlerUpdate);
       }
-    }
-
-    let bowler = await this.prismaService.bowlingSchema.findFirst({
-      where: {
-        inningsId: inningsId,
-        playerId: selectBowlerDto.bowlerId,
-      },
-    });
-
-    if (!bowler) {
-      bowler = await this.prismaService.bowlingSchema.create({
-        data: {
-          overLeft: match.bowlingLimit,
-          order: selectBowlerDto.order,
-          inningsId: inningsId,
-          playerId: selectBowlerDto.bowlerId,
-        },
-      });
-    }
-
-    if (bowler.overLeft <= 0) {
-      return {
-        success: false,
-        message:
-          "Bowler's overlimit has completed! Please select other bowler to continue",
-      };
     }
 
     const over = await this.prismaService.over.create({
