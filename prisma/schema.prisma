@@ -39,8 +39,7 @@ model Player {
   user          User            @relation(fields: [userId], references: [id])
   statsId       Int             @unique
   stats         Stats           @relation(fields: [statsId], references: [id])
-  teamAPlayers  Match[]         @relation("teamAPlayers")
-  teamBPlayers  Match[]         @relation("teamBPlayers")
+  players  Match[]         @relation("players")
   teams         Team[]          @relation("PlayerTeams")
   battingSchema BattingSchema[]
   bowlingSchema BowlingSchema[]
@@ -136,8 +135,7 @@ model Match {
   overs           Int
   createdById     Int?
   createdByPlayer Player?   @relation("createdByPlayer", fields: [createdById], references: [id])
-  teamAPlayers    Player[]  @relation("teamAPlayers")
-  teamBPlayers    Player[]  @relation("teamBPlayers")
+  players    Player[]  @relation("players")
   teams           Team[]
   inningsA        Int?
   inningsB        Int?

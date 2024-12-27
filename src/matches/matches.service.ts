@@ -139,6 +139,27 @@ export class MatchesService {
         tossWonTeamId: true,
       },
     });
+
+    // let playersA = startMatchDto.teamAPlayers;
+    // let playerB = startMatchDto.teamBPlayers;
+
+    // let players = [...playersA, playerB];
+
+    // const promises = players.map((player: number) => {
+    //   this.prismaService.match.update({
+    //     where: {
+    //       id: createMatch.id,
+    //     },
+    //     data: {
+    //       players: {
+    //         connect: {
+    //           id: player,
+    //         },
+    //       },
+    //     },
+    //   });
+    // });
+
     return createMatch;
   }
 
@@ -558,6 +579,14 @@ export class MatchesService {
         },
       });
 
+      if (innings.bowlerId == selectBowlerDto.bowlerId) {
+        return {
+          success: false,
+          selectNewBowler: true,
+          message: 'Please select different bowler',
+        };
+      }
+
       const lastover = bowlingData.over[bowlingData.over.length - 1];
       if (lastover.balls.length >= 6) {
         let previousBowlerUpdate =
@@ -589,13 +618,6 @@ export class MatchesService {
         console.log(previousBowlerUpdate);
       }
     }
-
-    // if (innings?.bowlerId == selectBowlerDto.bowlerId) {
-    //   return {
-    //     success: false,
-    //     messgae: 'Select Different Bowlers',
-    //   };
-    // }
 
     let bowler = await this.prismaService.bowlingSchema.findFirst({
       where: {
