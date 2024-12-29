@@ -15,6 +15,7 @@ import {
   selectBatsmanDto,
   selectBowlerDto,
   startMatchDto,
+  StartNewInningsDto,
 } from './dto/matches.dto';
 
 @Controller('matches')
@@ -50,6 +51,12 @@ export class MatchesController {
   @UseGuards(AuthGuard)
   getYourMatches(@Request() request: any) {
     return this.matchesService.yourMatches(request.user.id);
+  }
+
+  @Post('start_new_innings')
+  @UseGuards(AuthGuard)
+  startNewInnings(@Body() startNewInningsDto: StartNewInningsDto) {
+    return this.matchesService.startNewInnings(startNewInningsDto);
   }
 
   @Post(':id/scoring/select_bowler')

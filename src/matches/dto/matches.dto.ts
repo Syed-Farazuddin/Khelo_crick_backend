@@ -115,6 +115,14 @@ export class selectBatsmanDto {
   nonStrikerId: number;
 }
 
+export class StartNewInningsDto {
+  @IsNumber()
+  inningsid: number;
+
+  @IsNumber()
+  newInningsId: number;
+}
+
 export class selectBowlerDto {
   @IsNumber()
   bowlerId: number;

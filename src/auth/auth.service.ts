@@ -151,17 +151,22 @@ export class AuthService {
         mobile: true,
       },
     });
+
     if (otp != Number.parseInt(verifyOtp.otp)) {
       throw new UnauthorizedException('Invalid Credentials');
     }
+
     if (verifyOtp.isNewPlayer) {
       await this.createUser(mobile, name, id);
     }
+
     const payload = JSON.stringify({
       mobile: verifyOtp.mobile,
       id: id,
     });
+
     const token = await this.jwtService.signAsync(payload);
+
     return {
       success: true,
       token: token,
