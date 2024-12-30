@@ -246,6 +246,13 @@ export class MatchesService {
       };
     }
 
+    if (match.firstInnings.isCompleted && match.secondInnings.isCompleted) {
+      return {
+        endMatch: true,
+        success: false,
+      };
+    }
+
     let over: any = await this.prismaService.over.findUnique({
       where: {
         id: scoring.overId,
@@ -428,16 +435,101 @@ export class MatchesService {
   async startNewInnings(startNewInningsDto: StartNewInningsDto) {
     await this.prismaService.innings.update({
       where: {
-        id: startNewInningsDto.inningsid,
+        id: startNewInningsDto.inningsId,
       },
       data: {
         isCompleted: true,
       },
     });
 
-    return await this.prismaService.innings.findFirst({
+    return await this.prismaService.match.findFirst({
       where: {
-        id: startNewInningsDto.newInningsId,
+        inningsA: startNewInningsDto.inningsId,
+      },
+      select: {
+        ballType: true,
+        bowlingLimit: true,
+        chooseToBall: true,
+        chooseToBat: true,
+        createdById: true,
+        createdByPlayer: true,
+        date: true,
+        firstInnings: {
+          select: {
+            batting: {
+              select: {
+                team: {
+                  select: {
+                    name: true,
+                    id: true,
+                  },
+                },
+              },
+            },
+            bowling: {
+              select: {
+                team: {
+                  select: {
+                    name: true,
+                    id: true,
+                  },
+                },
+              },
+            },
+            oversPlayed: true,
+            id: true,
+            bytes: true,
+            extras: true,
+            isCompleted: true,
+            nonStriker: true,
+            striker: true,
+            totalNoBalls: true,
+            totalRuns: true,
+            totalWides: true,
+          },
+        },
+        secondInnings: {
+          select: {
+            batting: {
+              select: {
+                team: {
+                  select: {
+                    name: true,
+                    id: true,
+                  },
+                },
+              },
+            },
+            bowling: {
+              select: {
+                team: {
+                  select: {
+                    name: true,
+                    id: true,
+                  },
+                },
+              },
+            },
+            oversPlayed: true,
+            id: true,
+            bytes: true,
+            extras: true,
+            isCompleted: true,
+            nonStriker: true,
+            striker: true,
+            totalNoBalls: true,
+            totalRuns: true,
+            totalWides: true,
+          },
+        },
+        ground: true,
+        id: true,
+        inningsA: true,
+        inningsB: true,
+        overs: true,
+        state: true,
+        tossTeam: true,
+        tossWonTeamId: true,
       },
     });
   }
@@ -485,8 +577,16 @@ export class MatchesService {
           },
         },
         bowlerId: true,
-        bowling: true,
-        batting: true,
+        bowling: {
+          select: {
+            team: true,
+          },
+        },
+        batting: {
+          select: {
+            team: true,
+          },
+        },
         bytes: true,
         isCompleted: true,
         nonStrikerId: true,
@@ -659,11 +759,19 @@ export class MatchesService {
       where: {
         inningsA: inningsId,
       },
+      include: {
+        firstInnings: true,
+        secondInnings: true,
+      },
     });
     if (!match) {
       match = await this.prismaService.match.findFirst({
         where: {
-          inningsA: inningsId,
+          inningsB: inningsId,
+        },
+        include: {
+          firstInnings: true,
+          secondInnings: true,
         },
       });
     }

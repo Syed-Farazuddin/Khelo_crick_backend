@@ -117,10 +117,7 @@ export class selectBatsmanDto {
 
 export class StartNewInningsDto {
   @IsNumber()
-  inningsid: number;
-
-  @IsNumber()
-  newInningsId: number;
+  inningsId: number;
 }
 
 export class selectBowlerDto {
