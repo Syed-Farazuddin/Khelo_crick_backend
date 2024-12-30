@@ -658,7 +658,7 @@ export class MatchesService {
   }
 
   async yourMatches(id: number) {
-    return await this.prismaService.match.findMany({
+    const matches = await this.prismaService.match.findMany({
       where: {
         players: {
           some: {
@@ -752,6 +752,46 @@ export class MatchesService {
         tossWonTeamId: true,
       },
     });
+
+    const mappedMatches = matches.map((match) => {
+      let status = '';
+
+      if (match.firstInnings.isCompleted && match.secondInnings.isCompleted) {
+        if (match.firstInnings.totalRuns > match.secondInnings.totalRuns) {
+          status = `${match.firstInnings.batting[0].team.name} won by ${match.firstInnings.totalRuns - match.secondInnings.totalRuns}`;
+        } else {
+          status = `${match.secondInnings.batting[0].team.name} won by ${match.secondInnings.totalNoBalls}`;
+        }
+      } else if (match.firstInnings.isCompleted) {
+        const runsNeeded =
+          match.firstInnings.totalRuns - match.secondInnings.totalRuns;
+        const battingTeam = match.secondInnings.batting;
+        status = `${battingTeam[0].team.name} need ${runsNeeded} to win in ${match.overs - match.secondInnings.oversPlayed} Overs`;
+      }
+
+      return {
+        state: match.state,
+        ground: match.ground,
+        id: match.id,
+        date: match.date,
+        inningsA: match.inningsA,
+        inningsB: match.inningsB,
+        teams: match.teams,
+        overs: match.overs,
+        tossWonTeamId: match.tossWonTeamId,
+        firstInnings: match.firstInnings,
+        secondInnings: match.secondInnings,
+        createdByPlayer: match.createdByPlayer,
+        createdById: match.createdById,
+        bowlingLimit: match.bowlingLimit,
+        ballType: match.ballType,
+        chooseToBall: match.chooseToBall,
+        chooseToBat: match.chooseToBat,
+        status: status,
+      };
+    });
+
+    return mappedMatches;
   }
 
   async findMatch(inningsId: number) {
